@@ -33,7 +33,8 @@ You can freely **get the plugin via the UE4 marketplace** in order to automatica
 #### 2. [Solve circular dependencies](#2-Solve-circular-dependencies-1)
 ##### 2.1. [Use interfaces](#21-Use-interfaces-1)
 ##### 2.2. [Use Event Dispatcher](#22-Use-Event-Dispatcher-1)
-##### 2.3. [Redo the design](#23-Redo-the-design-1)
+##### 2.3. [Split Blueprint Function Library](#23-Split-Blueprint-Function-Library-1)
+##### 2.4. [Redo the design](#24-Redo-the-design-1)
 
 ### 1. Use Circular Dependencies Detector
 
@@ -95,9 +96,11 @@ The plugin is using **only hard referencies**.
 
 Press the button of a displayed asset in order to open it. The next asset in the circular dependency is **automatically search**. You just need **to manually make the search result empty** in order to break the circular dependency.
 
-*The search does not work for blueprint function library.*
-
 [![Open asset](Documentation/Gifs/Downsized/1_41-OpenAsset.gif)](Documentation/Gifs/1_41-OpenAsset.gif)
+
+**A specific search is done for Blueprint Function Library.**
+
+![Blueprint Function Library Search](Documentation/Images/1_42-BlueprintFunctionLibrarySearch.png)
 
 [Table of contents](#Table-of-contents)
 
@@ -180,7 +183,33 @@ If you have several behaviours after a return value, you can use an enum paramet
 
 [Table of contents](#Table-of-contents)
 
-#### 2.3. Redo the design
+#### 2.3. Split Blueprint Function Library
+
+**Problem :** *(explained with a schema to improve clarity)*  
+
+![Library Current Dependencies](Documentation/Images/2_31-LibraryCurrentDependencies.png)
+
+- **MyBlueprint** is a class.
+- **MyLib** is a Blueprint Function Library.
+- **FuncOfMyBP** is a function of MyLib that depends on MyBlueprint.
+- **FuncNotOfMyBP** is a function of MyLib that does **NOT** depend on MyBlueprint.
+- MyBlueprint use the function FuncNotOfMyBP.
+- MyBlueprint do **NOT** use the function FuncOfMyBP.
+
+*By the way, a function of MyLib that depends on MyBlueprint and that is used by MyBlueprint uses should be inside of MyBlueprint (cf. [Redo the design](#24-Redo-the-design-1)).*  
+*If you can't move the function inside MyBlueprint, you can still [use interfaces](#21-Use-interfaces-1).*
+
+**Solution :**  
+Place the function **FuncNotOfMyBP** in another Blueprint Function Library MyOtherLib.
+
+**New dependencies :**  
+![Event dependencies](Documentation/Images/2_32-LibraryDependencies.png)
+
+**Note :** All functions that depends on MyBlueprint must be in a library that is **NOT** used by MyBlueprint or inside MyBlueprint.
+
+[Table of contents](#Table-of-contents)
+
+#### 2.4. Redo the design
 
 If you have circular dependencies, it is certainly a design problem.
 This method is the hardest way to solve this but it is also the best.
